@@ -25,6 +25,18 @@ const AuthModal = () => {
     setError("");
     setIsLoading(true);
 
+    // Validación frontend
+    const missingFields = [];
+    if (isRegister && !name.trim()) missingFields.push("Nombre");
+    if (!email.trim()) missingFields.push("Email");
+    if (!password.trim()) missingFields.push("Contraseña");
+
+    if (missingFields.length > 0) {
+      setError(`Faltan campos requeridos: ${missingFields.join(", ")}`);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       if (isRegister) {
         await signup(name, email, password);
@@ -32,7 +44,13 @@ const AuthModal = () => {
         await login(email, password);
       }
     } catch (err) {
-      console.error("Error en autenticación:", err);
+      let errorMessage = "Error desconocido";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === "string") {
+        errorMessage = err;
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
