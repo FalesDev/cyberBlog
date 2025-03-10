@@ -20,6 +20,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  roles: Role[];
 }
 
 export interface Category {
@@ -50,6 +51,19 @@ export interface Post {
   status?: PostStatus;
 }
 
+export interface Role {
+  id: string;
+  name: string;
+}
+export interface User {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
+  roles: Role[];
+  createdAt: string;
+}
+
 export interface CreatePostRequest {
   title: string;
   content: string;
@@ -62,6 +76,17 @@ export interface UpdatePostRequest extends CreatePostRequest {
   id: string;
 }
 
+export interface CreateUserRequest {
+  email: string;
+  password: string;
+  name: string;
+  roleIds: string[];
+}
+
+export interface UpdateUserRequest extends CreateUserRequest {
+  id: string;
+}
+
 export interface ApiError {
   status: number;
   message: string;
@@ -69,6 +94,14 @@ export interface ApiError {
     field: string;
     message: string;
   }>;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 export enum PostStatus {
@@ -108,7 +141,7 @@ class ApiService {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           localStorage.removeItem("token");
-          window.location.href = "/login";
+          window.location.href = "/";
         }
         return Promise.reject(this.handleError(error));
       }
@@ -142,6 +175,18 @@ class ApiService {
     return response.data;
   }
 
+  public async signup(data: {
+    name: string;
+    email: string;
+    password: string;
+  }): Promise<AuthResponse> {
+    const response: AxiosResponse<AuthResponse> = await this.api.post(
+      "/auth/signup",
+      data
+    );
+    return response.data;
+  }
+
   // ApiService.ts
   public async getUserProfile(): Promise<AuthUser> {
     const response: AxiosResponse<AuthUser> = await this.api.get("/auth/me");
@@ -156,15 +201,40 @@ class ApiService {
   public async getPosts(params: {
     categoryId?: string;
     tagId?: string;
-  }): Promise<Post[]> {
-    const response: AxiosResponse<Post[]> = await this.api.get("/posts", {
-      params,
+    page?: number;
+    size?: number;
+    sort?: string;
+  }): Promise<PaginatedResponse<Post>> {
+    const response = await this.api.get<PaginatedResponse<Post>>("/posts", {
+      params: {
+        ...params,
+        page: params.page ? params.page - 1 : 0, // Spring usa 0-based index
+        size: params.size || 10,
+      },
     });
     return response.data;
   }
 
   public async getPost(id: string): Promise<Post> {
     const response: AxiosResponse<Post> = await this.api.get(`/posts/${id}`);
+    return response.data;
+  }
+
+  public async searchPostsByTitle(
+    title: string,
+    page: number,
+    size: number
+  ): Promise<PaginatedResponse<Post>> {
+    const response: AxiosResponse<PaginatedResponse<Post>> = await this.api.get(
+      "/posts/search",
+      {
+        params: {
+          title: title,
+          page: page - 1,
+          size: size,
+        },
+      }
+    );
     return response.data;
   }
 
@@ -189,10 +259,16 @@ class ApiService {
     page?: number;
     size?: number;
     sort?: string;
-  }): Promise<Post[]> {
-    const response: AxiosResponse<Post[]> = await this.api.get(
+  }): Promise<PaginatedResponse<Post>> {
+    const response = await this.api.get<PaginatedResponse<Post>>(
       "/posts/drafts",
-      { params }
+      {
+        params: {
+          ...params,
+          page: params.page ? params.page - 1 : 0, // Spring usa 0-based index
+          size: params.size || 10,
+        },
+      }
     );
     return response.data;
   }
@@ -240,6 +316,38 @@ class ApiService {
 
   public async deleteTag(id: string): Promise<void> {
     await this.api.delete(`/tags/${id}`);
+  }
+
+  public async getUsers(): Promise<User[]> {
+    const response: AxiosResponse<User[]> = await this.api.get("/users");
+    return response.data;
+  }
+
+  public async getUser(id: string): Promise<User> {
+    const response: AxiosResponse<User> = await this.api.get(`/users/${id}`);
+    return response.data;
+  }
+
+  public async createUser(post: CreateUserRequest): Promise<User> {
+    const response: AxiosResponse<User> = await this.api.post("/users", post);
+    return response.data;
+  }
+
+  public async updateUser(id: string, user: UpdateUserRequest): Promise<User> {
+    const response: AxiosResponse<User> = await this.api.put(
+      `/users/${id}`,
+      user
+    );
+    return response.data;
+  }
+
+  public async deleteUser(id: string): Promise<void> {
+    await this.api.delete(`/users/${id}`);
+  }
+
+  public async getRoles(): Promise<Role[]> {
+    const response: AxiosResponse<Role[]> = await this.api.get("/roles");
+    return response.data;
   }
 }
 

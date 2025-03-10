@@ -22,12 +22,9 @@ import {
 } from "@nextui-org/react";
 import { Plus, Trash2, X } from "lucide-react";
 import { apiService, Tag } from "../services/apiService";
+import { useData } from "../contexts/DataContext";
 
-interface TagsPageProps {
-  isAuthenticated: boolean;
-}
-
-const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
+const TagsPage: React.FC = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +32,7 @@ const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
   const [tagInput, setTagInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { refreshData } = useData();
 
   useEffect(() => {
     fetchTags();
@@ -46,7 +44,9 @@ const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
       const response = await apiService.getTags();
       setTags(response);
       setError(null);
+      window.scrollTo(0, 0);
     } catch (err) {
+      console.error(err);
       setError("Failed to load tags. Please try again later.");
     } finally {
       setLoading(false);
@@ -62,8 +62,10 @@ const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
       setIsSubmitting(true);
       await apiService.createTags(newTags);
       await fetchTags();
+      refreshData();
       handleModalClose();
     } catch (err) {
+      console.error(err);
       setError("Failed to create tags. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -81,7 +83,9 @@ const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
       setLoading(true);
       await apiService.deleteTag(tag.id);
       await fetchTags();
+      refreshData();
     } catch (err) {
+      console.error(err);
       setError("Failed to delete tag. Please try again.");
     } finally {
       setLoading(false);
@@ -112,19 +116,18 @@ const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-7xl mx-auto px-auto">
       <Card>
         <CardHeader className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Tags</h1>
-          {isAuthenticated && (
-            <Button
-              color="primary"
-              startContent={<Plus size={16} />}
-              onClick={onOpen}
-            >
-              Add Tags
-            </Button>
-          )}
+
+          <Button
+            color="primary"
+            startContent={<Plus size={16} />}
+            onClick={onOpen}
+          >
+            Add Tags
+          </Button>
         </CardHeader>
 
         <CardBody>
@@ -155,30 +158,24 @@ const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
                   <TableCell>{tag.name}</TableCell>
                   <TableCell>{tag.postCount || 0}</TableCell>
                   <TableCell>
-                    {isAuthenticated ? (
-                      <Tooltip
-                        content={
-                          tag.postCount
-                            ? "Cannot delete tag with existing posts"
-                            : "Delete tag"
-                        }
+                    <Tooltip
+                      content={
+                        tag.postCount
+                          ? "Cannot delete tag with existing posts"
+                          : "Delete tag"
+                      }
+                    >
+                      <Button
+                        isIconOnly
+                        variant="flat"
+                        color="danger"
+                        size="sm"
+                        onClick={() => handleDelete(tag)}
+                        isDisabled={tag?.postCount ? tag.postCount > 0 : false}
                       >
-                        <Button
-                          isIconOnly
-                          variant="flat"
-                          color="danger"
-                          size="sm"
-                          onClick={() => handleDelete(tag)}
-                          isDisabled={
-                            tag?.postCount ? tag.postCount > 0 : false
-                          }
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </Tooltip>
-                    ) : (
-                      <span>-</span>
-                    )}
+                        <Trash2 size={16} />
+                      </Button>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}

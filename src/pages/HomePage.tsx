@@ -1,118 +1,90 @@
 import React, { useEffect, useState } from "react";
-import { Card, CardHeader, CardBody, Tabs, Tab } from "@nextui-org/react";
-import { apiService, Post, Category, Tag } from "../services/apiService";
+import { apiService, Post, PaginatedResponse } from "../services/apiService";
 import PostList from "../components/PostList";
+import { useSearchParams } from "react-router-dom";
 
 const HomePage: React.FC = () => {
-  const [posts, setPosts] = useState<Post[] | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState("createdAt,desc");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined
-  );
-  const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
+  //const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") || "1", 10);
 
+  // Estado unificado para los posts
+  const [postsData, setPostsData] = useState<PaginatedResponse<Post> | null>(
+    null
+  );
+
+  // Obtener parámetros de búsqueda
+  const searchQuery = searchParams.get("search") || "";
+  const selectedCategory = searchParams.get("category") || undefined;
+  const selectedTag = searchParams.get("tag") || undefined;
+  const sortBy = searchParams.get("sort") || "createdAt,desc";
+
+  // Obtener posts
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [postsResponse, categoriesResponse, tagsResponse] =
-          await Promise.all([
-            apiService.getPosts({
-              categoryId:
-                selectedCategory != undefined ? selectedCategory : undefined,
-              tagId: selectedTag || undefined,
-            }),
-            apiService.getCategories(),
-            apiService.getTags(),
-          ]);
+        let response: PaginatedResponse<Post>;
 
-        setPosts(postsResponse);
-        setCategories(categoriesResponse);
-        setTags(tagsResponse);
-        setError(null);
-      } catch (err: unknown) {
-        console.error("Error fetching data:", err);
-        setError("An unexpected error occurred. Please try again later.");
+        if (searchQuery) {
+          response = await apiService.searchPostsByTitle(
+            searchQuery,
+            page, // Ya viene de la URL
+            pageSize
+          );
+        } else {
+          response = await apiService.getPosts({
+            categoryId: selectedCategory,
+            tagId: selectedTag,
+            page, // Usar página de la URL
+            size: pageSize,
+            sort: sortBy,
+          });
+        }
+        setPostsData(response);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido");
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [page, sortBy, selectedCategory, selectedTag]);
+    window.scrollTo(0, 0);
+  }, [searchQuery, selectedCategory, selectedTag, page, sortBy]);
 
-  const handleCategoryChange = (categoryId: string | undefined) => {
-    if ("all" === categoryId) {
-      setSelectedCategory(undefined);
-    } else {
-      setSelectedCategory(categoryId);
-    }
+  // Manejar cambios de página
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    setSearchParams(params); // Actualizar URL directamente
   };
 
+  useEffect(() => {
+    if (searchQuery) {
+      const params = new URLSearchParams(searchParams);
+      if (params.get("page") !== "1") {
+        params.set("page", "1");
+        setSearchParams(params, { replace: true }); // Actualizar sin historial extra
+      }
+    }
+  }, [searchQuery, searchParams, setSearchParams]);
+
   return (
-    <div className="max-w-6xl mx-auto px-4 space-y-6">
-      <Card className="mb-6 px-2">
-        <CardHeader>
-          <h1 className="text-2xl font-bold">Blog Posts</h1>
-        </CardHeader>
-        <CardBody>
-          <div className="flex flex-col gap-4">
-            <Tabs
-              selectedKey={selectedCategory}
-              onSelectionChange={(key) => {
-                handleCategoryChange(key as string);
-              }}
-              variant="underlined"
-              classNames={{
-                tabList: "gap-6",
-                cursor: "w-full bg-primary",
-              }}
-            >
-              <Tab key="all" title="All Posts" />
-              {categories.map((category) => (
-                <Tab
-                  key={category.id}
-                  title={`${category.name} (${category.postCount})`}
-                />
-              ))}
-            </Tabs>
-
-            {tags.length > 0 && (
-              <div className="flex gap-2 flex-wrap">
-                {tags.map((tag) => (
-                  <button
-                    key={tag.id}
-                    onClick={() =>
-                      setSelectedTag(selectedTag == tag.id ? undefined : tag.id)
-                    }
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      selectedTag === tag.id
-                        ? "bg-primary text-white"
-                        : "bg-default-100 hover:bg-default-200"
-                    }`}
-                  >
-                    {tag.name} ({tag.postCount})
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </CardBody>
-      </Card>
-
+    <div className="max-w-7xl mx-auto px-4">
       <PostList
-        posts={posts}
+        posts={postsData?.content || []}
+        pagination={{
+          currentPage: page,
+          totalPages: postsData?.totalPages || 0,
+          totalElements: postsData?.totalElements || 0,
+        }}
         loading={loading}
         error={error}
-        page={page}
-        sortBy={sortBy}
-        onPageChange={setPage}
-        onSortChange={setSortBy}
+        onPageChange={handlePageChange}
       />
     </div>
   );

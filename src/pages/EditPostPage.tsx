@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardBody, CardHeader, Button } from "@nextui-org/react";
+import { ArrowLeft } from "lucide-react";
 import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-} from '@nextui-org/react';
-import { ArrowLeft } from 'lucide-react';
-import { apiService, Post, Category, Tag, PostStatus } from '../services/apiService';
-import PostForm from '../components/PostForm';
+  apiService,
+  Post,
+  Category,
+  Tag,
+  PostStatus,
+} from "../services/apiService";
+import PostForm from "../components/PostForm";
+import { useData } from "../contexts/DataContext";
 
 const EditPostPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +21,7 @@ const EditPostPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { refreshData } = useData();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +29,7 @@ const EditPostPage: React.FC = () => {
         setLoading(true);
         const [categoriesResponse, tagsResponse] = await Promise.all([
           apiService.getCategories(),
-          apiService.getTags()
+          apiService.getTags(),
         ]);
 
         setCategories(categoriesResponse);
@@ -38,8 +41,10 @@ const EditPostPage: React.FC = () => {
         }
 
         setError(null);
+        window.scrollTo(0, 0);
       } catch (err) {
-        setError('Failed to load necessary data. Please try again later.');
+        console.error(err);
+        setError("Failed to load necessary data. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -62,15 +67,16 @@ const EditPostPage: React.FC = () => {
       if (id) {
         await apiService.updatePost(id, {
           ...postData,
-          id
+          id,
         });
       } else {
         await apiService.createPost(postData);
       }
-
-      navigate('/');
+      refreshData();
+      navigate("/");
     } catch (err) {
-      setError('Failed to save the post. Please try again.');
+      console.error(err);
+      setError("Failed to save the post. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -79,13 +85,13 @@ const EditPostPage: React.FC = () => {
     if (id) {
       navigate(`/posts/${id}`);
     } else {
-      navigate('/');
+      navigate("/");
     }
   };
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <Card className="w-full animate-pulse">
           <CardBody>
             <div className="h-8 bg-default-200 rounded w-3/4 mb-4"></div>
@@ -101,7 +107,7 @@ const EditPostPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-7xl mx-auto px-4">
       <Card className="w-full">
         <CardHeader className="flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -113,7 +119,7 @@ const EditPostPage: React.FC = () => {
               Back
             </Button>
             <h1 className="text-2xl font-bold">
-              {id ? 'Edit Post' : 'Create New Post'}
+              {id ? "Edit Post" : "Create New Post"}
             </h1>
           </div>
         </CardHeader>

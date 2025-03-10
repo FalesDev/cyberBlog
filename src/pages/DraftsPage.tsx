@@ -1,45 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  Card, 
-  CardHeader,
-  CardBody,
-  Button,
-} from '@nextui-org/react';
-import { Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { apiService, Post } from '../services/apiService';
-import PostList from '../components/PostList';
+import React, { useEffect, useState } from "react";
+import { Card, CardHeader, CardBody, Button } from "@nextui-org/react";
+import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { apiService, Post, PaginatedResponse } from "../services/apiService";
+import PostList from "../components/PostList";
 
 const DraftsPage: React.FC = () => {
-  const [drafts, setDrafts] = useState<Post[] | null>(null);
+  const [drafts, setDrafts] = useState<PaginatedResponse<Post> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState("updatedAt,desc");
+  const pageSize = 10; // Puedes hacerlo configurable
 
   useEffect(() => {
     const fetchDrafts = async () => {
       try {
         setLoading(true);
         const response = await apiService.getDrafts({
-          page: page - 1,
-          size: 10,
-          sort: sortBy,
+          page,
+          size: pageSize,
         });
         setDrafts(response);
         setError(null);
+        window.scrollTo(0, 0);
       } catch (err) {
-        setError('Failed to load drafts. Please try again later.');
+        console.error(err);
+        setError("Failed to load drafts. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchDrafts();
-  }, [page, sortBy]);
+    window.scrollTo(0, 0);
+  }, [page]);
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-7xl mx-auto px-auto">
       <Card>
         <CardHeader className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">My Drafts</h1>
@@ -59,18 +56,19 @@ const DraftsPage: React.FC = () => {
               {error}
             </div>
           )}
-
           <PostList
-            posts={drafts}
+            posts={drafts?.content || []}
+            pagination={{
+              currentPage: page,
+              totalPages: drafts?.totalPages || 0,
+              totalElements: drafts?.totalElements || 0,
+            }}
             loading={loading}
             error={error}
-            page={page}
-            sortBy={sortBy}
             onPageChange={setPage}
-            onSortChange={setSortBy}
           />
 
-          {drafts?.length === 0 && !loading && (
+          {drafts?.content?.length === 0 && !loading && (
             <div className="text-center py-8 text-default-500">
               <p>You don't have any draft posts yet.</p>
               <Button

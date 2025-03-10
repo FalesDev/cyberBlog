@@ -21,22 +21,23 @@ import {
   Share,
 } from "lucide-react";
 import { apiService, Post } from "../services/apiService";
+import { useAuth } from "../components/AuthContext";
+import { useData } from "../contexts/DataContext";
 
 interface PostPageProps {
   isAuthenticated?: boolean;
   currentUserId?: string;
 }
 
-const PostPage: React.FC<PostPageProps> = ({
-  isAuthenticated,
-  currentUserId,
-}) => {
+const PostPage: React.FC<PostPageProps> = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [post, setPost] = useState<Post | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const { refreshData } = useData();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -47,6 +48,7 @@ const PostPage: React.FC<PostPageProps> = ({
         setPost(fetchedPost);
         setError(null);
       } catch (err) {
+        console.error(err);
         setError("Failed to load the post. Please try again later.");
       } finally {
         setLoading(false);
@@ -54,7 +56,19 @@ const PostPage: React.FC<PostPageProps> = ({
     };
 
     fetchPost();
+    window.scrollTo(0, 0);
   }, [id]);
+
+  // Función para verificar permisos
+  const canEditOrDelete = () => {
+    if (!isAuthenticated || !user || !post) return false;
+
+    // Verificar si es el autor o admin
+    return (
+      user.id === post.author?.id ||
+      user.roles.some((role) => role.name === "ADMIN")
+    );
+  };
 
   const handleDelete = async () => {
     if (
@@ -67,8 +81,10 @@ const PostPage: React.FC<PostPageProps> = ({
     try {
       setIsDeleting(true);
       await apiService.deletePost(post.id);
+      refreshData();
       navigate("/");
     } catch (err) {
+      console.error(err);
       setError("Failed to delete the post. Please try again later.");
       setIsDeleting(false);
     }
@@ -83,6 +99,7 @@ const PostPage: React.FC<PostPageProps> = ({
       });
     } catch (err) {
       // Fallback to copying URL
+      console.error(err);
       navigator.clipboard.writeText(window.location.href);
     }
   };
@@ -106,7 +123,7 @@ const PostPage: React.FC<PostPageProps> = ({
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <Card className="w-full animate-pulse">
           <CardBody>
             <div className="h-8 bg-default-200 rounded w-3/4 mb-4"></div>
@@ -123,7 +140,7 @@ const PostPage: React.FC<PostPageProps> = ({
 
   if (error || !post) {
     return (
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <Card>
           <CardBody>
             <p className="text-danger">{error || "Post not found"}</p>
@@ -144,7 +161,7 @@ const PostPage: React.FC<PostPageProps> = ({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-7xl mx-auto px-4">
       <Card className="w-full">
         <CardHeader className="flex flex-col items-start gap-3">
           <div className="flex justify-between w-full">
@@ -158,7 +175,7 @@ const PostPage: React.FC<PostPageProps> = ({
               Back to Posts
             </Button>
             <div className="flex gap-2">
-              {isAuthenticated && (
+              {canEditOrDelete() && (
                 <>
                   <Button
                     as={Link}

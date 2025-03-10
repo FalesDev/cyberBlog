@@ -146,13 +146,14 @@ const PostForm: React.FC<PostFormProps> = ({
     setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleHeadingSelect = (level: number) => {
+  const handleHeadingSelect = (level: 1 | 2 | 3) => {
+    // Cambiar el tipo del parámetro
     editor?.chain().focus().toggleHeading({ level }).run();
   };
 
-  const suggestedTags = availableTags
-    .filter((tag) => !selectedTags.includes(tag))
-    .slice(0, 5);
+  const suggestedTags = availableTags.filter(
+    (tag) => !selectedTags.includes(tag)
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -182,7 +183,9 @@ const PostForm: React.FC<PostFormProps> = ({
                   </Button>
                 </DropdownTrigger>
                 <DropdownMenu
-                  onAction={(key) => handleHeadingSelect(Number(key))}
+                  onAction={(key) =>
+                    handleHeadingSelect(Number(key) as 1 | 2 | 3)
+                  } // Cast a tipo Level
                   aria-label="Heading levels"
                 >
                   <DropdownItem
@@ -299,6 +302,12 @@ const PostForm: React.FC<PostFormProps> = ({
               isInvalid={!!errors.category}
               errorMessage={errors.category}
               isRequired
+              scrollShadowProps={{
+                isEnabled: false,
+              }}
+              classNames={{
+                popoverContent: "max-h-[300px] overflow-y-auto",
+              }}
             >
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
@@ -312,6 +321,12 @@ const PostForm: React.FC<PostFormProps> = ({
             <Select
               label="Add Tags"
               selectedKeys={selectedTags.map((tag) => tag.id)}
+              scrollShadowProps={{
+                isEnabled: false,
+              }}
+              classNames={{
+                popoverContent: "max-h-[300px] overflow-y-auto",
+              }}
             >
               <SelectSection>
                 {suggestedTags.map((tag) => (
@@ -344,6 +359,9 @@ const PostForm: React.FC<PostFormProps> = ({
               label="Status"
               selectedKeys={[status]}
               onChange={(e) => setStatus(e.target.value as PostStatus)}
+              classNames={{
+                popoverContent: "max-h-[200px] overflow-y-auto",
+              }}
             >
               <SelectItem key={PostStatus.DRAFT} value={PostStatus.DRAFT}>
                 Draft

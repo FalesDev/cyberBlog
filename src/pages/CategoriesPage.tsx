@@ -21,12 +21,9 @@ import {
 } from "@nextui-org/react";
 import { Plus, Edit2, Trash2 } from "lucide-react";
 import { apiService, Category } from "../services/apiService";
+import { useData } from "../contexts/DataContext";
 
-interface CategoriesPageProps {
-  isAuthenticated: boolean;
-}
-
-const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
+const CategoriesPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +31,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { refreshData } = useData();
 
   useEffect(() => {
     fetchCategories();
@@ -45,7 +43,9 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
       const response = await apiService.getCategories();
       setCategories(response);
       setError(null);
+      window.scrollTo(0, 0);
     } catch (err) {
+      console.error(err);
       setError("Failed to load categories. Please try again later.");
     } finally {
       setLoading(false);
@@ -69,7 +69,9 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
       }
       await fetchCategories();
       handleModalClose();
+      refreshData();
     } catch (err) {
+      console.error(err);
       setError(
         `Failed to ${
           editingCategory ? "update" : "create"
@@ -93,7 +95,9 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
       setLoading(true);
       await apiService.deleteCategory(category.id);
       await fetchCategories();
+      refreshData();
     } catch (err) {
+      console.error(err);
       setError("Failed to delete category. Please try again.");
     } finally {
       setLoading(false);
@@ -119,19 +123,18 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-7xl mx-auto px-auto">
       <Card>
         <CardHeader className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Categories</h1>
-          {isAuthenticated && (
-            <Button
-              color="primary"
-              startContent={<Plus size={16} />}
-              onClick={openAddModal}
-            >
-              Add Category
-            </Button>
-          )}
+
+          <Button
+            color="primary"
+            startContent={<Plus size={16} />}
+            onClick={openAddModal}
+          >
+            Add Category
+          </Button>
         </CardHeader>
 
         <CardBody>
@@ -161,43 +164,36 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
                 <TableRow key={category.id}>
                   <TableCell>{category.name}</TableCell>
                   <TableCell>{category.postCount || 0}</TableCell>
+
                   <TableCell>
-                    {isAuthenticated ? (
-                      <div className="flex gap-2">
+                    <div className="flex gap-2">
+                      <Button
+                        isIconOnly
+                        variant="light"
+                        onClick={() => openEditModal(category)}
+                      >
+                        <Edit2 size={16} />
+                      </Button>
+                      <Tooltip
+                        content={
+                          category.postCount
+                            ? "Cannot delete category with existing posts"
+                            : "Delete category"
+                        }
+                      >
                         <Button
                           isIconOnly
-                          variant="flat"
-                          size="sm"
-                          onClick={() => openEditModal(category)}
-                        >
-                          <Edit2 size={16} />
-                        </Button>
-                        <Tooltip
-                          content={
-                            category.postCount
-                              ? "Cannot delete category with existing posts"
-                              : "Delete category"
+                          variant="light"
+                          color="danger"
+                          onClick={() => handleDelete(category)}
+                          isDisabled={
+                            category?.postCount ? category.postCount > 0 : false
                           }
                         >
-                          <Button
-                            isIconOnly
-                            variant="flat"
-                            color="danger"
-                            size="sm"
-                            onClick={() => handleDelete(category)}
-                            isDisabled={
-                              category?.postCount
-                                ? category.postCount > 0
-                                : false
-                            }
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </Tooltip>
-                      </div>
-                    ) : (
-                      <span>-</span>
-                    )}
+                          <Trash2 size={16} />
+                        </Button>
+                      </Tooltip>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

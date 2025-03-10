@@ -7,18 +7,26 @@ import React, {
 } from "react";
 import { apiService } from "../services/apiService";
 
+interface Role {
+  id: string;
+  name: string;
+}
+
 interface AuthUser {
   id: string;
   name: string;
   email: string;
+  roles: Role[];
 }
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: AuthUser | null;
   login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   token: string | null;
+  isLoading: boolean;
 }
 
 interface AuthProviderProps {
@@ -34,6 +42,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.getItem("token")
   );
 
+  const [isLoading, setIsLoading] = useState(true);
+
   // Initialize auth state from token
   useEffect(() => {
     const initializeAuth = async () => {
@@ -47,12 +57,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setToken(storedToken);
         } catch (error) {
           // If token is invalid, clear authentication
+          console.error("Error fetching users:", error);
           localStorage.removeItem("token");
           setIsAuthenticated(false);
           setUser(null);
           setToken(null);
         }
       }
+      setIsLoading(false);
     };
 
     initializeAuth();
@@ -91,6 +103,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     window.location.reload();
   }, []);
 
+  const signup = useCallback(
+    async (name: string, email: string, password: string) => {
+      try {
+        const response = await apiService.signup({ name, email, password });
+
+        localStorage.setItem("token", response.token);
+        setToken(response.token);
+        setIsAuthenticated(true);
+
+        const userProfile = await apiService.getUserProfile();
+        setUser(userProfile);
+      } catch (error: unknown) {
+        console.error("Signup error:", error);
+
+        let errorMessage = "El correo ya está registrado";
+
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "response" in error &&
+          typeof error.response === "object" &&
+          error.response !== null &&
+          "data" in error.response &&
+          typeof error.response.data === "object" &&
+          error.response.data !== null &&
+          "message" in error.response.data
+        ) {
+          errorMessage = (error.response.data as { message: string }).message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        throw new Error(errorMessage);
+      }
+    },
+    []
+  );
+
   // Update apiService token when it changes
   useEffect(() => {
     if (token) {
@@ -106,8 +156,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated,
     user,
     login,
+    signup,
     logout,
     token,
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

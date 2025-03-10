@@ -18,7 +18,7 @@ const LoginPage = () => {
 
     try {
       await login(email, password); // Lógica de autenticación
-      navigate("/");
+      navigate("/posts/new");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Error al iniciar sesión. Inténtalo de nuevo.");
