@@ -141,7 +141,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 variant="flat"
                 startContent={<BookDashed size={16} />}
               >
-                Draft Posts
+                Borradores
               </Button>
             </NavbarItem>
             <NavbarItem>
@@ -152,7 +152,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 variant="flat"
                 startContent={<Plus size={16} />}
               >
-                New Post
+                Crear
               </Button>
             </NavbarItem>
             <NavbarItem>
@@ -168,7 +168,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 </DropdownTrigger>
                 <DropdownMenu aria-label="User menu">
                   <DropdownItem key="drafts" startContent={<Edit3 size={16} />}>
-                    <Link to="/posts/drafts">My Drafts</Link>
+                    <Link to="/posts/drafts">Mis borradores</Link>
                   </DropdownItem>
                   <DropdownItem
                     key="logout"
@@ -177,7 +177,7 @@ const NavBar: React.FC<NavBarProps> = ({
                     color="danger"
                     onPress={onLogout}
                   >
-                    Log Out
+                    Cerrar sesión
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>

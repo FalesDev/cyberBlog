@@ -59,35 +59,41 @@ const AuthModal = () => {
   return (
     <>
       <Button onPress={onOpen} variant="flat">
-        Log In
+        Iniciar sesión
       </Button>
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsRegister(false)} // Resetear aquí al cerrar
+        onOpenChange={onOpenChange} // Mantener el comportamiento original
+      >
         <ModalContent>
-          <ModalHeader>{isRegister ? "Register" : "Log In"}</ModalHeader>
+          <ModalHeader>
+            {isRegister ? "Regístrate" : "Iniciar sesión"}
+          </ModalHeader>
           <ModalBody>
             {error && <p className="text-red-500">{error}</p>}
             {isRegister && (
               <Input
-                label="Name"
-                placeholder="Enter your name"
+                label="Nombre"
+                placeholder="Ingresa tu nombre completo"
                 fullWidth
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             )}
             <Input
-              label="Email"
+              label="Correo electrónico"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Ingresa tu correo electrónico"
               fullWidth
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
             />
             <Input
-              label="Password"
+              label="Contraseña"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Ingresa tu contraseña"
               fullWidth
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -97,11 +103,15 @@ const AuthModal = () => {
           <ModalFooter>
             <Button onPress={() => setIsRegister(!isRegister)} variant="light">
               {isRegister
-                ? "Already have an account? Log In"
-                : "Create an account"}
+                ? "¿Ya tienes una cuenta? Iniciar sesión"
+                : "Regístrate aquí"}
             </Button>
             <Button color="primary" onPress={handleAuth} disabled={isLoading}>
-              {isLoading ? "Processing..." : isRegister ? "Sign Up" : "Log In"}
+              {isLoading
+                ? "Processing..."
+                : isRegister
+                ? "Registrarse"
+                : "Iniciar sesión"}
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -47,7 +47,9 @@ const TagsPage: React.FC = () => {
       window.scrollTo(0, 0);
     } catch (err) {
       console.error(err);
-      setError("Failed to load tags. Please try again later.");
+      setError(
+        "No se pudieron cargar las etiquetas. Inténtalo de nuevo más tarde."
+      );
     } finally {
       setLoading(false);
     }
@@ -66,7 +68,7 @@ const TagsPage: React.FC = () => {
       handleModalClose();
     } catch (err) {
       console.error(err);
-      setError("Failed to create tags. Please try again.");
+      setError("No se pudieron crear las etiquetas. Inténtalo de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -74,7 +76,9 @@ const TagsPage: React.FC = () => {
 
   const handleDelete = async (tag: Tag) => {
     if (
-      !window.confirm(`Are you sure you want to delete the tag "${tag.name}"?`)
+      !window.confirm(
+        `¿Estás seguro de que quieres eliminar la etiqueta "${tag.name}"?`
+      )
     ) {
       return;
     }
@@ -86,7 +90,7 @@ const TagsPage: React.FC = () => {
       refreshData();
     } catch (err) {
       console.error(err);
-      setError("Failed to delete tag. Please try again.");
+      setError("No se pudo eliminar la etiqueta. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -119,14 +123,14 @@ const TagsPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-auto">
       <Card>
         <CardHeader className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Tags</h1>
+          <h1 className="text-2xl font-bold">Etiquetas</h1>
 
           <Button
             color="primary"
             startContent={<Plus size={16} />}
             onClick={onOpen}
           >
-            Add Tags
+            Agregar etiquetas
           </Button>
         </CardHeader>
 
@@ -141,17 +145,17 @@ const TagsPage: React.FC = () => {
             aria-label="Tags table"
             isHeaderSticky
             classNames={{
-              wrapper: "max-h-[600px]",
+              wrapper: "max-h-[500px]",
             }}
           >
             <TableHeader>
-              <TableColumn>NAME</TableColumn>
-              <TableColumn>POST COUNT</TableColumn>
-              <TableColumn>ACTIONS</TableColumn>
+              <TableColumn>NOMBRE</TableColumn>
+              <TableColumn>TOTAL DE PUBLICACIONES</TableColumn>
+              <TableColumn>ACCIONES</TableColumn>
             </TableHeader>
             <TableBody
               isLoading={loading}
-              loadingContent={<div>Loading tags...</div>}
+              loadingContent={<div>Cargando etiquetas...</div>}
             >
               {tags.map((tag) => (
                 <TableRow key={tag.id}>
@@ -186,12 +190,12 @@ const TagsPage: React.FC = () => {
 
       <Modal isOpen={isOpen} onClose={handleModalClose}>
         <ModalContent>
-          <ModalHeader>Add Tags</ModalHeader>
+          <ModalHeader>Agregar etiquetas</ModalHeader>
           <ModalBody>
             <div className="space-y-4">
               <Input
-                label="Enter tags"
-                placeholder="Type and press Enter or comma to add tags"
+                label="Ingrese las etiquetas"
+                placeholder="Escriba y presione Enter o coma para agregar etiquetas"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagInputKeyDown}
@@ -212,7 +216,7 @@ const TagsPage: React.FC = () => {
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onClick={handleModalClose}>
-              Cancel
+              Cancelar
             </Button>
             <Button
               color="primary"
@@ -220,7 +224,7 @@ const TagsPage: React.FC = () => {
               isLoading={isSubmitting}
               isDisabled={newTags.length === 0}
             >
-              Add Tags
+              Agregar etiquetas
             </Button>
           </ModalFooter>
         </ModalContent>

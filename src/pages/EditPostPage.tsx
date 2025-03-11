@@ -116,10 +116,10 @@ const EditPostPage: React.FC = () => {
               startContent={<ArrowLeft size={16} />}
               onClick={handleCancel}
             >
-              Back
+              Atras
             </Button>
             <h1 className="text-2xl font-bold">
-              {id ? "Edit Post" : "Create New Post"}
+              {id ? "Editar publicación" : "Crear nueva publicación"}
             </h1>
           </div>
         </CardHeader>

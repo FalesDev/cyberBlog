@@ -59,7 +59,7 @@ const UsersPage: React.FC = () => {
           window.scrollTo(0, 0);
         } catch (err) {
           console.error("Error fetching data:", err);
-          setError("Failed to load data");
+          setError("Error al cargar datos");
         } finally {
           setLoading(false);
         }
@@ -76,7 +76,9 @@ const UsersPage: React.FC = () => {
       setError(null);
     } catch (err) {
       console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      setError(
+        "No se pudieron cargar los usuarios. Inténtelo nuevamente más tarde."
+      );
     } finally {
       setLoading(false);
     }
@@ -84,11 +86,11 @@ const UsersPage: React.FC = () => {
 
   const validateForm = () => {
     if (!name.trim() || !email.trim() || selectedRoles.length === 0) {
-      setError("Name, Email and Roles are required");
+      setError("Se requieren nombre, correo electrónico y roles");
       return false;
     }
     if (!editingUser && !password.trim()) {
-      setError("Password is required for new users");
+      setError("Se requiere contraseña para nuevos usuarios");
       return false;
     }
     return true;
@@ -124,17 +126,21 @@ const UsersPage: React.FC = () => {
 
   const handleDelete = async (userToDelete: User) => {
     if (userToDelete.id === currentUser?.id) {
-      setError("You cannot delete yourself");
+      setError("No puedes borrarte a ti mismo");
       return;
     }
 
-    if (window.confirm(`Delete user ${userToDelete.email}?`)) {
+    if (
+      window.confirm(
+        `¿Estas seguro de eliminar al usuario ${userToDelete.email}?`
+      )
+    ) {
       try {
         await apiService.deleteUser(userToDelete.id);
         await fetchUsers();
       } catch (err) {
         console.error("Error deleting user:", err);
-        setError("Error deleting user");
+        setError("Error al eliminar usuario");
       }
     }
   };
@@ -170,20 +176,20 @@ const UsersPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-auto">
       <Card>
         <CardHeader className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Users Management</h1>
+          <h1 className="text-2xl font-bold">Usuarios</h1>
           <Button
             color="primary"
             startContent={<Plus size={16} />}
             onClick={handleOpenCreateModal}
           >
-            Add User
+            Agregar usuario
           </Button>
         </CardHeader>
 
         <CardBody>
           {loading && (
             <div className="text-center py-8">
-              <p>Loading users...</p>
+              <p>Cargando usuarios...</p>
             </div>
           )}
           {!loading && error && (
@@ -194,10 +200,10 @@ const UsersPage: React.FC = () => {
 
           <Table aria-label="Users table">
             <TableHeader>
-              <TableColumn>NAME</TableColumn>
-              <TableColumn>EMAIL</TableColumn>
+              <TableColumn>NOMBRE</TableColumn>
+              <TableColumn>CORREO ELECTRONICO</TableColumn>
               <TableColumn>ROLES</TableColumn>
-              <TableColumn>ACTIONS</TableColumn>
+              <TableColumn>ACCIONES</TableColumn>
             </TableHeader>
             <TableBody>
               {users.map((user) => (
@@ -224,6 +230,10 @@ const UsersPage: React.FC = () => {
                         isIconOnly
                         variant="light"
                         onClick={() => handleOpenEditModal(user)}
+                        isDisabled={
+                          user.id === currentUser?.id ||
+                          user.name === "Admin User"
+                        }
                       >
                         <Edit2 size={16} />
                       </Button>
@@ -231,7 +241,7 @@ const UsersPage: React.FC = () => {
                         content={
                           user.id === currentUser?.id
                             ? "Cannot delete yourself"
-                            : "Delete user"
+                            : "Eliminar usuario"
                         }
                       >
                         <Button
@@ -239,7 +249,10 @@ const UsersPage: React.FC = () => {
                           variant="light"
                           color="danger"
                           onClick={() => handleDelete(user)}
-                          isDisabled={user.id === currentUser?.id}
+                          isDisabled={
+                            user.id === currentUser?.id ||
+                            user.name === "Admin User"
+                          }
                         >
                           <Trash2 size={16} />
                         </Button>
@@ -256,32 +269,32 @@ const UsersPage: React.FC = () => {
       <Modal isOpen={isOpen} onClose={handleCloseModal}>
         <ModalContent>
           <ModalHeader>
-            {editingUser ? "Edit User" : "Create New User"}
+            {editingUser ? "Editar usuario" : "Crear nuevo usuario"}
           </ModalHeader>
           <ModalBody>
             <Input
-              label="Name"
+              label="Nombre"
               value={name}
               onChange={(e) => setName(e.target.value)}
               isRequired
             />
             <Input
-              label="Email"
+              label="Correo electrónico"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               isRequired
             />
             <Input
-              label="Password"
+              label="Contraseña"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               isRequired={!editingUser}
-              placeholder={editingUser ? "Leave blank to keep current" : ""}
+              placeholder={editingUser ? "" : ""}
             />
             <Select
-              label="Add Roles"
+              label="Agregar roles"
               selectedKeys={new Set(selectedRoles)}
               scrollShadowProps={{ isEnabled: false }}
               classNames={{ popoverContent: "max-h-[300px] overflow-y-auto" }}
@@ -315,7 +328,7 @@ const UsersPage: React.FC = () => {
                     variant="flat"
                     endContent={<X size={14} />}
                   >
-                    {role?.name || "Unknown Role"}
+                    {role?.name || "Rol desconocido"}
                   </Chip>
                 );
               })}
@@ -323,10 +336,10 @@ const UsersPage: React.FC = () => {
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onClick={handleCloseModal}>
-              Cancel
+              Cancelar
             </Button>
             <Button color="primary" onClick={handleSubmit}>
-              {editingUser ? "Save Changes" : "Create User"}
+              {editingUser ? "Guardar cambios" : "Crear usuario"}
             </Button>
           </ModalFooter>
         </ModalContent>

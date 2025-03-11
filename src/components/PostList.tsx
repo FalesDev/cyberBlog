@@ -162,7 +162,7 @@ const PostList: React.FC<PostListProps> = ({
                   </div>
                   <div className="flex items-center gap-1 text-small text-default-500">
                     <Clock size={16} />
-                    {post.readingTime} min read
+                    {post.readingTime} minutos leidos
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Chip className="bg-primary-100 text-primary">

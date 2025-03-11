@@ -154,3 +154,25 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.prose {
+  white-space: pre-wrap;
+}
+.prose p.empty-paragraph {
+  height: 1em;
+  margin: 0.5em 0;
+  position: relative;
+}
+.prose p.empty-paragraph::after {
+  content: "\\00a0"; /* Espacio no rompible */
+  visibility: hidden;
+}
+.prose br.line-break {
+  content: "";
+  display: block;
+  margin-bottom: 1em;
+}
+.prose p {
+  margin-bottom: 0.7em;
+  min-height: 0.7em;
+}

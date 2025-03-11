@@ -107,13 +107,13 @@ const PostForm: React.FC<PostFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!title.trim()) {
-      newErrors.title = "Title is required";
+      newErrors.title = "Título es requerido";
     }
     if (!editor?.getHTML() || editor?.getHTML() === "<p></p>") {
-      newErrors.content = "Content is required";
+      newErrors.content = "Contenido es requerido";
     }
     if (!categoryId) {
-      newErrors.category = "Category is required";
+      newErrors.category = "Categoria es requerida";
     }
 
     setErrors(newErrors);
@@ -161,7 +161,7 @@ const PostForm: React.FC<PostFormProps> = ({
         <CardBody className="space-y-4">
           <div className="space-y-2">
             <Input
-              label="Title"
+              label="Título"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               isInvalid={!!errors.title}
@@ -179,7 +179,7 @@ const PostForm: React.FC<PostFormProps> = ({
                     size="sm"
                     endContent={<ChevronDown size={16} />}
                   >
-                    Heading
+                    Título
                   </Button>
                 </DropdownTrigger>
                 <DropdownMenu
@@ -196,7 +196,7 @@ const PostForm: React.FC<PostFormProps> = ({
                         : ""
                     }
                   >
-                    Heading 1
+                    Título 1
                   </DropdownItem>
                   <DropdownItem
                     key="2"
@@ -206,7 +206,7 @@ const PostForm: React.FC<PostFormProps> = ({
                         : ""
                     }
                   >
-                    Heading 2
+                    Título 2
                   </DropdownItem>
                   <DropdownItem
                     key="3"
@@ -216,7 +216,7 @@ const PostForm: React.FC<PostFormProps> = ({
                         : ""
                     }
                   >
-                    Heading 3
+                    Título 3
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
@@ -296,7 +296,7 @@ const PostForm: React.FC<PostFormProps> = ({
 
           <div className="space-y-2">
             <Select
-              label="Category"
+              label="Categoria"
               selectedKeys={categoryId ? [categoryId] : []}
               onChange={(e) => setCategoryId(e.target.value)}
               isInvalid={!!errors.category}
@@ -319,7 +319,7 @@ const PostForm: React.FC<PostFormProps> = ({
 
           <div className="space-y-2">
             <Select
-              label="Add Tags"
+              label="Etiquetas"
               selectedKeys={selectedTags.map((tag) => tag.id)}
               scrollShadowProps={{
                 isEnabled: false,
@@ -356,7 +356,7 @@ const PostForm: React.FC<PostFormProps> = ({
 
           <div className="space-y-2">
             <Select
-              label="Status"
+              label="Estado"
               selectedKeys={[status]}
               onChange={(e) => setStatus(e.target.value as PostStatus)}
               classNames={{
@@ -364,13 +364,13 @@ const PostForm: React.FC<PostFormProps> = ({
               }}
             >
               <SelectItem key={PostStatus.DRAFT} value={PostStatus.DRAFT}>
-                Draft
+                Borrador
               </SelectItem>
               <SelectItem
                 key={PostStatus.PUBLISHED}
                 value={PostStatus.PUBLISHED}
               >
-                Published
+                Publicado
               </SelectItem>
             </Select>
           </div>
@@ -382,10 +382,10 @@ const PostForm: React.FC<PostFormProps> = ({
               onClick={onCancel}
               disabled={isSubmitting}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button color="primary" type="submit" isLoading={isSubmitting}>
-              {initialPost ? "Update" : "Create"} Post
+              {initialPost ? "Editar" : "Crear"} publicación
             </Button>
           </div>
         </CardBody>

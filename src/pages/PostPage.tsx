@@ -43,13 +43,15 @@ const PostPage: React.FC<PostPageProps> = () => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        if (!id) throw new Error("Post ID is required");
+        if (!id) throw new Error("Post ID es requerido");
         const fetchedPost = await apiService.getPost(id);
         setPost(fetchedPost);
         setError(null);
       } catch (err) {
         console.error(err);
-        setError("Failed to load the post. Please try again later.");
+        setError(
+          "No se pudo cargar la publicación. Inténtalo nuevamente más tarde."
+        );
       } finally {
         setLoading(false);
       }
@@ -73,7 +75,7 @@ const PostPage: React.FC<PostPageProps> = () => {
   const handleDelete = async () => {
     if (
       !post ||
-      !window.confirm("Are you sure you want to delete this post?")
+      !window.confirm("¿Estás seguro de que deseas eliminar esta publicación?")
     ) {
       return;
     }
@@ -85,7 +87,9 @@ const PostPage: React.FC<PostPageProps> = () => {
       navigate("/");
     } catch (err) {
       console.error(err);
-      setError("Failed to delete the post. Please try again later.");
+      setError(
+        "No se pudo eliminar la publicación. Inténtalo nuevamente más tarde."
+      );
       setIsDeleting(false);
     }
   };
@@ -113,10 +117,14 @@ const PostPage: React.FC<PostPageProps> = () => {
   };
 
   const createSanitizedHTML = (content: string) => {
+    const processedContent = content
+      .replace(/<p><\/p>/g, '<p class="empty-paragraph"></p>')
+      .replace(/\n/g, '<br class="line-break"/>');
+
     return {
-      __html: DOMPurify.sanitize(content, {
+      __html: DOMPurify.sanitize(processedContent, {
         ALLOWED_TAGS: ["p", "strong", "em", "br"],
-        ALLOWED_ATTR: [],
+        ALLOWED_ATTR: ["class"],
       }),
     };
   };
@@ -152,7 +160,7 @@ const PostPage: React.FC<PostPageProps> = () => {
               startContent={<ArrowLeft size={16} />}
               className="mt-4"
             >
-              Back to Home
+              Regresar al Inicio
             </Button>
           </CardBody>
         </Card>
@@ -172,7 +180,7 @@ const PostPage: React.FC<PostPageProps> = () => {
               startContent={<ArrowLeft size={16} />}
               size="sm"
             >
-              Back to Posts
+              Regresar a las publicaciones
             </Button>
             <div className="flex gap-2">
               {canEditOrDelete() && (
@@ -185,7 +193,7 @@ const PostPage: React.FC<PostPageProps> = () => {
                     startContent={<Edit size={16} />}
                     size="sm"
                   >
-                    Edit
+                    Editar
                   </Button>
                   <Button
                     color="danger"
@@ -195,7 +203,7 @@ const PostPage: React.FC<PostPageProps> = () => {
                     isLoading={isDeleting}
                     size="sm"
                   >
-                    Delete
+                    Eliminar
                   </Button>
                 </>
               )}
@@ -205,7 +213,7 @@ const PostPage: React.FC<PostPageProps> = () => {
                 onClick={handleShare}
                 size="sm"
               >
-                Share
+                Compartir
               </Button>
             </div>
           </div>

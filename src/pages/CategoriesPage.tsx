@@ -46,7 +46,9 @@ const CategoriesPage: React.FC = () => {
       window.scrollTo(0, 0);
     } catch (err) {
       console.error(err);
-      setError("Failed to load categories. Please try again later.");
+      setError(
+        "No se pudieron cargar las categorías. Inténtalo de nuevo más tarde."
+      );
     } finally {
       setLoading(false);
     }
@@ -85,7 +87,7 @@ const CategoriesPage: React.FC = () => {
   const handleDelete = async (category: Category) => {
     if (
       !window.confirm(
-        `Are you sure you want to delete the category "${category.name}"?`
+        `¿Estás seguro de que deseas eliminar la categoría "${category.name}"?`
       )
     ) {
       return;
@@ -98,7 +100,7 @@ const CategoriesPage: React.FC = () => {
       refreshData();
     } catch (err) {
       console.error(err);
-      setError("Failed to delete category. Please try again.");
+      setError("No se pudo eliminar la categoría. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -126,14 +128,14 @@ const CategoriesPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-auto">
       <Card>
         <CardHeader className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Categories</h1>
+          <h1 className="text-2xl font-bold">Categorias</h1>
 
           <Button
             color="primary"
             startContent={<Plus size={16} />}
             onClick={openAddModal}
           >
-            Add Category
+            Agregar categoría
           </Button>
         </CardHeader>
 
@@ -148,17 +150,17 @@ const CategoriesPage: React.FC = () => {
             aria-label="Categories table"
             isHeaderSticky
             classNames={{
-              wrapper: "max-h-[600px]",
+              wrapper: "max-h-[500px]",
             }}
           >
             <TableHeader>
-              <TableColumn>NAME</TableColumn>
-              <TableColumn>POST COUNT</TableColumn>
-              <TableColumn>ACTIONS</TableColumn>
+              <TableColumn>NOMBRE</TableColumn>
+              <TableColumn>TOTAL DE PUBLICACIONES</TableColumn>
+              <TableColumn>ACCIONES</TableColumn>
             </TableHeader>
             <TableBody
               isLoading={loading}
-              loadingContent={<div>Loading categories...</div>}
+              loadingContent={<div>Cargando categorias...</div>}
             >
               {categories.map((category) => (
                 <TableRow key={category.id}>
@@ -205,11 +207,11 @@ const CategoriesPage: React.FC = () => {
       <Modal isOpen={isOpen} onClose={handleModalClose}>
         <ModalContent>
           <ModalHeader>
-            {editingCategory ? "Edit Category" : "Add Category"}
+            {editingCategory ? "Editar categoría" : "Agregar categoría"}
           </ModalHeader>
           <ModalBody>
             <Input
-              label="Category Name"
+              label="Nombre de la categoría"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
               isRequired
@@ -217,14 +219,14 @@ const CategoriesPage: React.FC = () => {
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onClick={handleModalClose}>
-              Cancel
+              Cancelar
             </Button>
             <Button
               color="primary"
               onClick={handleAddEdit}
               isLoading={isSubmitting}
             >
-              {editingCategory ? "Update" : "Add"}
+              {editingCategory ? "Editar" : "Agregar"}
             </Button>
           </ModalFooter>
         </ModalContent>

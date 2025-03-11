@@ -25,7 +25,9 @@ const DraftsPage: React.FC = () => {
         window.scrollTo(0, 0);
       } catch (err) {
         console.error(err);
-        setError("Failed to load drafts. Please try again later.");
+        setError(
+          "No se pudieron cargar los borradores. Inténtalo de nuevo más tarde."
+        );
       } finally {
         setLoading(false);
       }
@@ -39,14 +41,14 @@ const DraftsPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-auto">
       <Card>
         <CardHeader className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">My Drafts</h1>
+          <h1 className="text-2xl font-bold">Mis borradores</h1>
           <Button
             as={Link}
             to="/posts/new"
             color="primary"
             startContent={<Plus size={16} />}
           >
-            New Post
+            Crear
           </Button>
         </CardHeader>
 
@@ -70,7 +72,7 @@ const DraftsPage: React.FC = () => {
 
           {drafts?.content?.length === 0 && !loading && (
             <div className="text-center py-8 text-default-500">
-              <p>You don't have any draft posts yet.</p>
+              <p>Aún no tienes ningún borrador de publicación.</p>
               <Button
                 as={Link}
                 to="/posts/new"
@@ -78,7 +80,7 @@ const DraftsPage: React.FC = () => {
                 variant="flat"
                 className="mt-4"
               >
-                Create Your First Post
+                Crea tu primera publicación
               </Button>
             </div>
           )}
