@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Sidebar from "./components/Sidebar";
@@ -13,9 +13,14 @@ import UsersPage from "./pages/UsersPage";
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
 
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  allowedRoles?: string[];
+}
+
 // Protected Route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return <div className="p-4 text-gray-500">Cargando...</div>;
@@ -25,29 +30,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/" replace />;
   }
 
+  if (
+    allowedRoles &&
+    !user?.roles?.some((role) => allowedRoles.includes(role.name))
+  ) {
+    return <Navigate to="/" replace />;
+  }
+
   return <>{children}</>;
 };
 
 function AppContent() {
   const { isAuthenticated, logout, user } = useAuth();
-  const [darkMode, setDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const isDark = savedTheme
-      ? savedTheme === "dark"
-      : window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    setDarkMode(isDark);
-    document.documentElement.classList.toggle("dark", isDark);
-  }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle("dark");
-    localStorage.setItem("theme", !darkMode ? "dark" : "light");
-  };
 
   return (
     <BrowserRouter>
@@ -62,8 +57,6 @@ function AppContent() {
             : undefined
         }
         onLogout={logout}
-        darkMode={darkMode}
-        toggleDarkMode={toggleDarkMode}
         className="fixed top-0 w-full z-50"
         toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
       />
@@ -119,7 +112,7 @@ function AppContent() {
             <Route
               path="/users"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
                   <UsersPage />
                 </ProtectedRoute>
               }

@@ -25,8 +25,6 @@ interface NavBarProps {
     avatar?: string;
   };
   onLogout: () => void;
-  darkMode: boolean;
-  toggleDarkMode: () => void;
   className?: string;
   toggleSidebar: () => void;
   searchQuery?: string;
