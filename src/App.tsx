@@ -45,7 +45,7 @@ function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <NavBar
         isAuthenticated={isAuthenticated}
         userProfile={

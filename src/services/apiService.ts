@@ -141,7 +141,7 @@ class ApiService {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           localStorage.removeItem("token");
-          window.location.href = "/";
+          window.location.href = import.meta.env.BASE_URL;
         }
         return Promise.reject(this.handleError(error));
       }
